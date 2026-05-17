@@ -13,8 +13,13 @@ async function request(path, options = {}) {
 }
 
 // Local mode
-export const getEvents = (city, params = {}) =>
-  request(`/events?city=${encodeURIComponent(city)}&${new URLSearchParams(params)}`)
+export const getEvents = ({ city, state, zip_code, ...params } = {}) => {
+  const q = new URLSearchParams(params)
+  if (zip_code) q.set('zip_code', zip_code)
+  if (city) q.set('city', city)
+  if (state) q.set('state', state)
+  return request(`/events?${q}`)
+}
 
 // Nomad mode
 export const getBriefing = (city) =>

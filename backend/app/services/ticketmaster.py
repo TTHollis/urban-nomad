@@ -19,6 +19,7 @@ def _normalize(event: dict) -> dict:
         "venue_name": venue.get("name"),
         "venue_address": venue.get("address", {}).get("line1"),
         "city": venue.get("city", {}).get("name"),
+        "state": venue.get("state", {}).get("stateCode"),
         "url": event.get("url"),
         "image": thumb,
         "category": (event.get("classifications") or [{}])[0]
@@ -28,7 +29,9 @@ def _normalize(event: dict) -> dict:
 
 
 async def search_ticketmaster(
-    city: str,
+    city: str | None,
+    state: str | None,
+    zip_code: str | None,
     category: str | None,
     start_date: str | None,
     end_date: str | None,
@@ -38,7 +41,16 @@ async def search_ticketmaster(
     if not api_key:
         return []
 
-    params = {"apikey": api_key, "city": city, "size": size, "sort": "date,asc"}
+    params = {"apikey": api_key, "size": size, "sort": "date,asc"}
+
+    if zip_code:
+        params["postalCode"] = zip_code
+    else:
+        params["city"] = city
+        if state:
+            # Ticketmaster uses 2-letter stateCode for US states
+            params["stateCode"] = state.strip().upper()[:2] if len(state.strip()) <= 2 else state.strip()[:2].upper()
+
     if category:
         params["classificationName"] = category
     if start_date:

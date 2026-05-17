@@ -18,6 +18,7 @@ def _normalize(event: dict) -> dict:
         "venue_name": venue.get("name"),
         "venue_address": address.get("address_1"),
         "city": address.get("city"),
+        "state": address.get("region"),
         "url": event.get("url"),
         "image": (logo.get("original") or {}).get("url"),
         "category": None,
@@ -25,7 +26,9 @@ def _normalize(event: dict) -> dict:
 
 
 async def search_eventbrite(
-    city: str,
+    city: str | None,
+    state: str | None,
+    zip_code: str | None,
     category: str | None,
     start_date: str | None,
     end_date: str | None,
@@ -35,8 +38,16 @@ async def search_eventbrite(
     if not token:
         return []
 
+    # Build location string — Eventbrite accepts free-text address
+    if zip_code:
+        location = zip_code
+    elif state:
+        location = f"{city}, {state}"
+    else:
+        location = city
+
     params = {
-        "location.address": city,
+        "location.address": location,
         "expand": "venue",
         "page_size": min(size, 50),
         "sort_by": "date",

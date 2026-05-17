@@ -1,4 +1,7 @@
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+load_dotenv()  # must run before os.getenv() calls in services
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
