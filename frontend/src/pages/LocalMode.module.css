@@ -231,9 +231,9 @@
 .idleHint::before {
   content: '';
   position: absolute;
-  inset: -30px;
-  background: url('/map-bg.jpg') center / cover no-repeat;
-  filter: blur(10px) brightness(0.45) saturate(1.8) contrast(1.15);
+  inset: -10px;
+  background: url('/map2-bg.jpg') center / cover no-repeat;
+  filter: blur(2px) brightness(0.5) saturate(1.4) contrast(1.1);
   opacity: 1;
   z-index: -1;
   pointer-events: none;

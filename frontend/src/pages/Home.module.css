@@ -10,14 +10,14 @@
   overflow: hidden;
 }
 
-/* Blurred map layer — the image itself is darkened so no blue overlay needed */
+/* Map background — high-res so we can keep the details sharp */
 .page::before {
   content: '';
   position: absolute;
-  inset: -60px;
-  background: url('/map-bg.jpg') center / cover no-repeat;
-  /* brightness drops white→gray, saturate punches up colors, contrast keeps detail */
-  filter: blur(12px) brightness(0.45) saturate(1.8) contrast(1.15);
+  inset: -20px;
+  background: url('/map2-bg.jpg') center / cover no-repeat;
+  /* light blur for softness, darkening so whites become navy-friendly */
+  filter: blur(3px) brightness(0.5) saturate(1.4) contrast(1.1);
   opacity: 1;
   z-index: -1;
   pointer-events: none;
