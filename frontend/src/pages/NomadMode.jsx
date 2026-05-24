@@ -124,8 +124,11 @@ export default function NomadMode() {
   const hasResults = playbookStatus === 'success' || tipsStatus === 'success' || eventsStatus === 'success'
   const isLoading = playbookStatus === 'loading'
 
+  // Hide map background once anything has loaded or is loading
+  const isActive = hasResults || isLoading
+
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${isActive ? styles.pageActive : ''}`}>
       <Header />
       <main className={styles.main}>
 

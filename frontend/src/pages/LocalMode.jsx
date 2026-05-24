@@ -68,8 +68,11 @@ export default function LocalMode() {
     if (lastSearch) runSearch(lastSearch, displayName, category, range)
   }
 
+  // Hide map background once user has loaded or is loading results
+  const isActive = status !== 'idle'
+
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${isActive ? styles.pageActive : ''}`}>
       <Header />
       <main className={styles.main}>
 
