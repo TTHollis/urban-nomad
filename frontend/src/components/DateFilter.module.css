@@ -1,0 +1,84 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pill {
+  padding: 5px 12px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: 1px solid var(--white-dim);
+  background: var(--white-subtle);
+  transition: all var(--transition);
+}
+.pill:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+.active { color: #0F1A35 !important; }
+.green { background: var(--green) !important; border-color: var(--green) !important; }
+.amber { background: var(--amber) !important; border-color: var(--amber) !important; }
+
+.customRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.dateInput {
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--white-dim);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  font-size: 13px;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+.applyBtn {
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F1A35;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition);
+}
+.applyBtn:hover:not(:disabled) { opacity: 0.88; }
+.applyBtn:disabled { opacity: 0.45; cursor: not-allowed; }

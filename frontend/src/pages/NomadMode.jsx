@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import TipCard from '../components/TipCard'
 import EventCard from '../components/EventCard'
 import LocationSearch from '../components/LocationSearch'
+import CalendarView from '../components/CalendarView'
 import { getBriefing, getTips, addTip, getEvents } from '../services/api'
 import { useRecentSearches } from '../hooks/useRecentSearches'
 import styles from './NomadMode.module.css'
@@ -25,6 +26,7 @@ export default function NomadMode() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [formStatus, setFormStatus] = useState('idle')
   const [showForm, setShowForm] = useState(false)
+  const [eventsView, setEventsView] = useState('grid')
   const { record } = useRecentSearches()
 
   const search = useCallback(async ({ city, state, zip_code, displayName: name }) => {
@@ -179,12 +181,30 @@ export default function NomadMode() {
                 )}
                 {eventsStatus === 'success' && events.length > 0 && (
                   <>
-                    <p className={styles.resultsMeta}>
-                      {events.length} upcoming event{events.length !== 1 ? 's' : ''} in <strong>{displayName}</strong>
-                    </p>
-                    <div className={styles.eventsGrid}>
-                      {events.map(event => <EventCard key={event.id} event={event} />)}
+                    <div className={styles.eventsBar}>
+                      <p className={styles.resultsMeta}>
+                        {events.length} upcoming event{events.length !== 1 ? 's' : ''} in <strong>{displayName}</strong>
+                      </p>
+                      <div className={styles.viewToggle}>
+                        <button
+                          type="button"
+                          className={`${styles.viewBtn} ${eventsView === 'grid' ? styles.viewActive : ''}`}
+                          onClick={() => setEventsView('grid')}
+                        >▦ Grid</button>
+                        <button
+                          type="button"
+                          className={`${styles.viewBtn} ${eventsView === 'calendar' ? styles.viewActive : ''}`}
+                          onClick={() => setEventsView('calendar')}
+                        >🗓️ Calendar</button>
+                      </div>
                     </div>
+                    {eventsView === 'grid' ? (
+                      <div className={styles.eventsGrid}>
+                        {events.map(event => <EventCard key={event.id} event={event} />)}
+                      </div>
+                    ) : (
+                      <CalendarView events={events} accentColor="amber" />
+                    )}
                   </>
                 )}
               </div>

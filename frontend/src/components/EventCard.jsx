@@ -1,4 +1,6 @@
+import { useState, useRef, useEffect } from 'react'
 import { useFavorites } from '../hooks/useFavorites'
+import { downloadIcs, googleCalUrl } from '../utils/calendar'
 import styles from './EventCard.module.css'
 
 const SOURCE_LABEL = { ticketmaster: 'Ticketmaster', eventbrite: 'Eventbrite' }
@@ -14,6 +16,8 @@ function formatDate(date, time) {
 export default function EventCard({ event }) {
   const { isFavorite, toggle } = useFavorites()
   const saved = isFavorite(event.id)
+  const [calMenuOpen, setCalMenuOpen] = useState(false)
+  const calRef = useRef(null)
 
   const handleStar = (e) => {
     e.preventDefault()
@@ -21,22 +25,44 @@ export default function EventCard({ event }) {
     toggle(event)
   }
 
+  const handleCalToggle = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCalMenuOpen(v => !v)
+  }
+
+  const handleDownload = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    downloadIcs(event)
+    setCalMenuOpen(false)
+  }
+
+  const handleGoogle = (e) => {
+    e.stopPropagation()
+    const url = googleCalUrl(event)
+    if (url) window.open(url, '_blank', 'noopener,noreferrer')
+    setCalMenuOpen(false)
+  }
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!calMenuOpen) return
+    const onClick = (e) => {
+      if (calRef.current && !calRef.current.contains(e.target)) setCalMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [calMenuOpen])
+
   return (
-    <a
-      href={event.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={styles.card}
-    >
+    <a href={event.url} target="_blank" rel="noopener noreferrer" className={styles.card}>
       <div className={styles.imgWrap}>
         {event.image
           ? <img src={event.image} alt={event.name} className={styles.img} loading="lazy" />
           : <div className={styles.imgPlaceholder}>🎟️</div>
         }
-        <span
-          className={styles.sourceBadge}
-          style={{ background: SOURCE_COLOR[event.source] }}
-        >
+        <span className={styles.sourceBadge} style={{ background: SOURCE_COLOR[event.source] }}>
           {SOURCE_LABEL[event.source]}
         </span>
         <button
@@ -56,6 +82,29 @@ export default function EventCard({ event }) {
         {event.venue_name && (
           <p className={styles.venue}>📍 {event.venue_name}{event.venue_address ? ` · ${event.venue_address}` : ''}</p>
         )}
+        <div className={styles.actions} ref={calRef}>
+          <button type="button" className={styles.calBtn} onClick={handleCalToggle}>
+            📅 Add to Calendar
+          </button>
+          {calMenuOpen && (
+            <div className={styles.calMenu}>
+              <button type="button" className={styles.calOption} onClick={handleDownload}>
+                <span>📥</span>
+                <span>
+                  <strong>Download .ics</strong>
+                  <small>Apple, Outlook, default</small>
+                </span>
+              </button>
+              <button type="button" className={styles.calOption} onClick={handleGoogle}>
+                <span>🗓️</span>
+                <span>
+                  <strong>Google Calendar</strong>
+                  <small>Opens in new tab</small>
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </a>
   )

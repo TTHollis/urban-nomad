@@ -14,7 +14,12 @@ async function request(path, options = {}) {
 
 // Local mode
 export const getEvents = ({ city, state, zip_code, ...params } = {}) => {
-  const q = new URLSearchParams(params)
+  const q = new URLSearchParams()
+  // Only include params that have actual values — never stringify
+  // undefined/null/empty as "undefined" into the URL.
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') q.set(k, v)
+  }
   if (zip_code) q.set('zip_code', zip_code)
   if (city) q.set('city', city)
   if (state) q.set('state', state)

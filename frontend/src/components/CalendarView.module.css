@@ -1,0 +1,174 @@
+.wrap {
+  background: var(--white-subtle);
+  border: 1px solid var(--white-dim);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--white-dim);
+  background: rgba(255,255,255,0.03);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.controls { display: flex; align-items: center; gap: 8px; }
+
+.navBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white-soft);
+  border: 1px solid var(--white-dim);
+  background: var(--white-subtle);
+  transition: all var(--transition);
+}
+.navBtn:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+.todayBtn {
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F1A35;
+  transition: opacity var(--transition);
+}
+.todayBtn:hover { opacity: 0.88; }
+
+.green { background: var(--green); }
+.amber { background: var(--amber); }
+
+/* Day-of-week row */
+.dowRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--white-dim);
+}
+
+.dowCell {
+  padding: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Main grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+}
+
+.cell {
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 100px;
+  position: relative;
+}
+.cell:nth-child(7n) { border-right: none; }
+
+.outside { background: rgba(0,0,0,0.18); }
+.outside .dateNum { color: rgba(255,255,255,0.25); }
+
+.dateBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.dateNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white-soft);
+}
+
+.today .dateNum {
+  color: #0F1A35;
+}
+.today.green .dateNum { background: var(--green); }
+.today.amber .dateNum { background: var(--amber); }
+
+.eventCount {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--white-dim);
+  color: var(--white-soft);
+}
+
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.event {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--white-soft);
+  background: rgba(255,255,255,0.04);
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+  overflow: hidden;
+}
+.event:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+
+.eventDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eventName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.more {
+  font-size: 10px;
+  color: var(--text-secondary);
+  padding: 0 4px;
+  font-weight: 500;
+}
+
+/* Mobile — reduce cell height a bit */
+@media (max-width: 640px) {
+  .grid { grid-auto-rows: minmax(70px, auto); }
+  .cell { min-height: 70px; padding: 4px; }
+  .dateNum { width: 20px; height: 20px; font-size: 11px; }
+  .event { font-size: 9.5px; padding: 1px 3px; }
+  .eventName { font-size: 9.5px; }
+}
