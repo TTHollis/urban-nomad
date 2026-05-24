@@ -10,10 +10,15 @@
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 32px 20px;
+  padding-bottom: max(60px, calc(var(--safe-bottom) + 40px));
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .main { padding: 20px 14px; padding-bottom: max(40px, calc(var(--safe-bottom) + 28px)); }
 }
 
 .headerRow {
@@ -90,13 +95,16 @@
 }
 
 .exploreBtn {
-  padding: 10px 22px;
+  padding: 12px 22px;
+  min-height: 44px;
   font-size: 14px;
   font-weight: 700;
   color: #0F1A35;
   background: var(--green);
   border-radius: var(--radius-sm);
   transition: opacity var(--transition);
+  display: inline-flex;
+  align-items: center;
 }
 .exploreBtn:hover { opacity: 0.88; }
 .exploreBtn.amber { background: var(--amber); }

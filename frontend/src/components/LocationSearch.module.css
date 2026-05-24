@@ -21,7 +21,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 8px 14px;
+  min-height: 38px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
@@ -60,7 +61,8 @@
 }
 
 .toggleBtn {
-  padding: 6px 16px;
+  padding: 8px 14px;
+  min-height: 38px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
@@ -68,6 +70,8 @@
   border: 1px solid var(--white-dim);
   background: var(--white-subtle);
   transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
 }
 .toggleBtn:hover { color: var(--white); }
 
@@ -82,6 +86,11 @@
 .cityRow {
   display: flex;
   gap: 10px;
+}
+
+@media (max-width: 540px) {
+  .cityRow { flex-direction: column; }
+  .stateInput { max-width: 100% !important; }
 }
 
 .recentDropdown {
@@ -118,7 +127,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 12px 14px;
+  min-height: 44px;
   font-size: 14px;
   color: var(--white-soft);
   background: none;
@@ -163,7 +173,8 @@
 .searchBtn {
   font-weight: 700;
   font-size: 15px;
-  padding: 13px 28px;
+  padding: 14px 28px;
+  min-height: 48px;
   border-radius: var(--radius-sm);
   min-width: 110px;
   display: flex;
@@ -172,6 +183,10 @@
   color: #0F1A35;
   transition: opacity var(--transition), transform var(--transition);
   align-self: flex-start;
+}
+
+@media (max-width: 540px) {
+  .searchBtn { align-self: stretch; width: 100%; }
 }
 .searchBtn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
 .searchBtn:disabled { opacity: 0.45; cursor: not-allowed; }
