@@ -19,14 +19,13 @@ services:
       - key: CORS_ORIGINS
         value: https://urbannomad.onrender.com
 
-  # React PWA (static site)
+  # React PWA (static site — always free, no plan needed)
   - type: web
     name: urbannomad
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    plan: free
     headers:
       - path: /*
         name: Cache-Control
