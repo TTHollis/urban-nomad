@@ -39,9 +39,17 @@ export default function EventCard({ event }) {
       text: `${event.name}${venueStr}${dateStr ? ' · ' + dateStr : ''}`,
       url: event.url,
     })
+    // Always give feedback — user should never wonder if the button worked
     if (res.method === 'clipboard' && res.ok) {
       setShareToast('Link copied!')
-      setTimeout(() => setShareToast(''), 1800)
+    } else if (res.method === 'native' && res.cancelled) {
+      // User cancelled the native share — no toast needed
+      return
+    } else if (!res.ok) {
+      setShareToast('Could not share — try long-pressing the link')
+    }
+    if (res.method !== 'native') {
+      setTimeout(() => setShareToast(''), 2200)
     }
   }
 

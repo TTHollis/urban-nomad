@@ -54,7 +54,13 @@ export default function NomadMode() {
     })
     if (res.method === 'clipboard' && res.ok) {
       setShareToast('Link copied to clipboard!')
-      setTimeout(() => setShareToast(''), 1800)
+    } else if (res.method === 'native' && res.cancelled) {
+      return
+    } else if (!res.ok) {
+      setShareToast('Could not share — try long-pressing the link')
+    }
+    if (res.method !== 'native') {
+      setTimeout(() => setShareToast(''), 2200)
     }
   }
 
@@ -299,6 +305,16 @@ export default function NomadMode() {
                         {formStatus === 'loading' ? <span className={styles.spinner} /> : 'Post Tip'}
                       </button>
                     </div>
+                    <p className={styles.formFinePrint}>
+                      By posting, you agree to our{' '}
+                      <a
+                        href="https://github.com/TTHollis/urban-nomad/blob/master/ETHICS.md"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.formLink}
+                      >community standards</a>.
+                      Tips are screened by AI before going live.
+                    </p>
                     {formStatus === 'error' && <p className={styles.formError}>{formError}</p>}
                   </form>
                 )}

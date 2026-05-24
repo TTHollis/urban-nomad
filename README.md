@@ -158,6 +158,12 @@ Urban Nomad v1 is intentionally auth-free — no accounts, no logins. Community 
 
 ---
 
+## Our Ethics
+
+Urban Nomad has explicit standards on inclusivity, AI honesty, user privacy, and content moderation. Read them in **[ETHICS.md](./ETHICS.md)**.
+
+---
+
 ## License
 
 MIT

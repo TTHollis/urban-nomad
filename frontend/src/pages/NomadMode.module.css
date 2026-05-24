@@ -460,6 +460,24 @@
 
 .formError { font-size: 12px; color: #e74c3c; }
 
+.formFinePrint {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.formLink {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-color: rgba(243, 156, 18, 0.4);
+  text-underline-offset: 2px;
+  transition: text-decoration-color var(--transition);
+}
+.formLink:hover {
+  text-decoration-color: var(--amber);
+}
+
 .tipsList { display: flex; flex-direction: column; gap: 10px; }
 
 /* States */
