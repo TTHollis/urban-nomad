@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { detectLocation, geoErrorMessage } from '../hooks/useGeolocation'
 import styles from './LocationSearch.module.css'
 
 export default function LocationSearch({ onSearch, loading, accentColor = 'green', buttonLabel = 'Search' }) {
@@ -6,6 +7,8 @@ export default function LocationSearch({ onSearch, loading, accentColor = 'green
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
   const [zip, setZip] = useState('')
+  const [detecting, setDetecting] = useState(false)
+  const [geoError, setGeoError] = useState('')
 
   const accent = accentColor === 'amber' ? styles.amber : styles.green
 
@@ -21,23 +24,60 @@ export default function LocationSearch({ onSearch, loading, accentColor = 'green
     }
   }
 
+  const handleDetectLocation = async () => {
+    setGeoError('')
+    setDetecting(true)
+    try {
+      const loc = await detectLocation()
+      // Switch to city mode and fill the fields so the user sees what was detected
+      setMode('city')
+      setCity(loc.city)
+      setState(loc.state || '')
+      setZip('')
+      // Auto-trigger the search
+      onSearch({
+        city: loc.city,
+        state: loc.state || undefined,
+        displayName: loc.displayName,
+      })
+    } catch (err) {
+      setGeoError(geoErrorMessage(err))
+    } finally {
+      setDetecting(false)
+    }
+  }
+
   return (
     <form className={styles.wrap} onSubmit={handleSubmit}>
-      {/* Mode toggle */}
-      <div className={styles.toggle}>
+      {/* Mode toggle + detect button */}
+      <div className={styles.toggleRow}>
+        <div className={styles.toggle}>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${mode === 'city' ? `${styles.toggleActive} ${accent}` : ''}`}
+            onClick={() => setMode('city')}
+          >
+            🏙️ City
+          </button>
+          <button
+            type="button"
+            className={`${styles.toggleBtn} ${mode === 'zip' ? `${styles.toggleActive} ${accent}` : ''}`}
+            onClick={() => setMode('zip')}
+          >
+            📮 Zip / Postal
+          </button>
+        </div>
         <button
           type="button"
-          className={`${styles.toggleBtn} ${mode === 'city' ? `${styles.toggleActive} ${accent}` : ''}`}
-          onClick={() => setMode('city')}
+          className={styles.locateBtn}
+          onClick={handleDetectLocation}
+          disabled={detecting || loading}
+          title="Use my current location"
         >
-          🏙️ City
-        </button>
-        <button
-          type="button"
-          className={`${styles.toggleBtn} ${mode === 'zip' ? `${styles.toggleActive} ${accent}` : ''}`}
-          onClick={() => setMode('zip')}
-        >
-          📮 Zip / Postal
+          {detecting
+            ? <><span className={styles.miniSpinner} /> Locating…</>
+            : <>📍 Use my location</>
+          }
         </button>
       </div>
 
@@ -50,7 +90,6 @@ export default function LocationSearch({ onSearch, loading, accentColor = 'green
             placeholder="City name — e.g. Jacksonville"
             value={city}
             onChange={e => setCity(e.target.value)}
-            autoFocus
           />
           <input
             className={`${styles.input} ${styles.stateInput}`}
@@ -67,17 +106,20 @@ export default function LocationSearch({ onSearch, loading, accentColor = 'green
           placeholder="ZIP or postal code — e.g. 32099"
           value={zip}
           onChange={e => setZip(e.target.value)}
-          autoFocus
         />
       )}
 
       <button
         className={`${styles.searchBtn} ${accent}`}
         type="submit"
-        disabled={loading || (mode === 'city' ? !city.trim() : !zip.trim())}
+        disabled={loading || detecting || (mode === 'city' ? !city.trim() : !zip.trim())}
       >
         {loading ? <span className={styles.spinner} /> : buttonLabel}
       </button>
+
+      {geoError && (
+        <p className={styles.geoError}>⚠️ {geoError}</p>
+      )}
     </form>
   )
 }
