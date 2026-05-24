@@ -130,6 +130,7 @@
 .briefingWrap { min-height: 300px; }
 
 .briefing {
+  position: relative;
   background: var(--white-subtle);
   border: 1px solid var(--white-dim);
   border-radius: var(--radius);
@@ -160,6 +161,46 @@
   border: 1px solid var(--amber);
   padding: 3px 9px;
   border-radius: 20px;
+}
+
+.briefingActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  min-height: 32px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--white-subtle);
+  border: 1px solid var(--white-dim);
+  border-radius: 16px;
+  transition: all var(--transition);
+}
+.shareBtn:hover {
+  border-color: var(--amber);
+  background: rgba(243, 156, 18, 0.1);
+}
+
+.shareToast {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: var(--amber);
+  color: #0F1A35;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10;
 }
 
 /* Markdown styles */

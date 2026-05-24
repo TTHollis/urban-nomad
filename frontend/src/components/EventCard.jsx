@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useFavorites } from '../hooks/useFavorites'
 import { downloadIcs, googleCalUrl } from '../utils/calendar'
+import { shareContent } from '../utils/share'
 import styles from './EventCard.module.css'
 
 const SOURCE_LABEL = { ticketmaster: 'Ticketmaster', eventbrite: 'Eventbrite' }
@@ -17,12 +18,31 @@ export default function EventCard({ event }) {
   const { isFavorite, toggle } = useFavorites()
   const saved = isFavorite(event.id)
   const [calMenuOpen, setCalMenuOpen] = useState(false)
+  const [shareToast, setShareToast] = useState('')
   const calRef = useRef(null)
 
   const handleStar = (e) => {
     e.preventDefault()
     e.stopPropagation()
     toggle(event)
+  }
+
+  const handleShare = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const dateStr = event.start_date
+      ? new Date(`${event.start_date}T${event.start_time || '00:00'}`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : ''
+    const venueStr = event.venue_name ? ` at ${event.venue_name}` : ''
+    const res = await shareContent({
+      title: event.name || 'Event',
+      text: `${event.name}${venueStr}${dateStr ? ' · ' + dateStr : ''}`,
+      url: event.url,
+    })
+    if (res.method === 'clipboard' && res.ok) {
+      setShareToast('Link copied!')
+      setTimeout(() => setShareToast(''), 1800)
+    }
   }
 
   const handleCalToggle = (e) => {
@@ -74,6 +94,16 @@ export default function EventCard({ event }) {
         >
           {saved ? '★' : '☆'}
         </button>
+        <button
+          type="button"
+          onClick={handleShare}
+          className={styles.shareBtn}
+          aria-label="Share event"
+          title="Share event"
+        >
+          ↗
+        </button>
+        {shareToast && <div className={styles.shareToast}>{shareToast}</div>}
       </div>
       <div className={styles.body}>
         {event.category && <span className={styles.category}>{event.category}</span>}

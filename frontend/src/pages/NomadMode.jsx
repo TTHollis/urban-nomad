@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import Header from '../components/Header'
 import TipCard from '../components/TipCard'
@@ -7,6 +7,7 @@ import LocationSearch from '../components/LocationSearch'
 import CalendarView from '../components/CalendarView'
 import { getBriefing, getTips, addTip, getEvents } from '../services/api'
 import { useRecentSearches } from '../hooks/useRecentSearches'
+import { shareContent } from '../utils/share'
 import styles from './NomadMode.module.css'
 
 const TIP_CATEGORIES = ['General', 'Food', 'Transport', 'Safety', 'Etiquette', 'Nightlife', 'Hidden Gems']
@@ -27,7 +28,35 @@ export default function NomadMode() {
   const [formStatus, setFormStatus] = useState('idle')
   const [showForm, setShowForm] = useState(false)
   const [eventsView, setEventsView] = useState('grid')
+  const [shareToast, setShareToast] = useState('')
   const { record } = useRecentSearches()
+
+  // Auto-search if ?city=X is in the URL (from a shared link)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const cityParam = params.get('city')
+    if (cityParam) {
+      const parts = cityParam.split(',').map(s => s.trim())
+      search({
+        city: parts[0],
+        state: parts[1] || undefined,
+        displayName: cityParam,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleSharePlaybook = async () => {
+    const res = await shareContent({
+      title: `${displayName} — Urban Nomad`,
+      text: `Local playbook for ${displayName}. Get the inside scoop on culture, food, and neighborhoods.`,
+      url: `${window.location.origin}/nomad?city=${encodeURIComponent(displayName)}`,
+    })
+    if (res.method === 'clipboard' && res.ok) {
+      setShareToast('Link copied to clipboard!')
+      setTimeout(() => setShareToast(''), 1800)
+    }
+  }
 
   const search = useCallback(async ({ city, state, zip_code, displayName: name }) => {
     const cityLabel = name || zip_code || city
@@ -147,11 +176,23 @@ export default function NomadMode() {
                   <div className={styles.briefing}>
                     <div className={styles.briefingHeader}>
                       <h2 className={styles.cityTitle}>{displayName}</h2>
-                      <span className={styles.aiTag}>✨ AI Generated</span>
+                      <div className={styles.briefingActions}>
+                        <span className={styles.aiTag}>✨ AI Generated</span>
+                        <button
+                          type="button"
+                          className={styles.shareBtn}
+                          onClick={handleSharePlaybook}
+                          aria-label="Share this playbook"
+                          title="Share this playbook"
+                        >
+                          ↗ Share
+                        </button>
+                      </div>
                     </div>
                     <div className={styles.markdown}>
                       <ReactMarkdown>{briefing}</ReactMarkdown>
                     </div>
+                    {shareToast && <div className={styles.shareToast}>{shareToast}</div>}
                   </div>
                 )}
               </div>
