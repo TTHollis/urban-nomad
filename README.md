@@ -78,6 +78,80 @@ urban-nomad/
 
 ---
 
+## Local Development
+
+### Prerequisites
+- Node.js 18+
+- Python 3.11+
+- API keys for Ticketmaster, Eventbrite, and OpenAI
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/TTHollis/urban-nomad.git
+cd urban-nomad
+```
+
+### 2. Set up the backend
+
+```bash
+cd backend
+cp .env.example .env
+# Fill in your API keys in .env
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+### 3. Set up the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173**
+
+---
+
+## Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and fill in your keys:
+
+```
+TICKETMASTER_API_KEY=your_key_here
+EVENTBRITE_TOKEN=your_token_here
+OPENAI_API_KEY=your_key_here
+```
+
+> ⚠️ **Never commit `.env`** — it is gitignored. Only `.env.example` belongs in the repo.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Health check |
+| GET | `/api/events` | Search events by city, state, or zip |
+| GET | `/api/nomad/briefing` | AI cultural playbook for a city |
+| GET | `/api/nomad/tips` | Community tips for a city |
+| POST | `/api/nomad/tips` | Submit a new community tip |
+
+---
+
+## Deploying to Render.com
+
+The `render.yaml` in the root configures both services automatically.
+
+1. Push to GitHub
+2. Go to [render.com](https://render.com) → New → Blueprint
+3. Connect your `urban-nomad` repo
+4. Add your API keys as environment variables in the Render dashboard
+5. Deploy
+
+---
+
 ## No Auth in v1
 
 Urban Nomad v1 is intentionally auth-free — no accounts, no logins. Community tips are posted anonymously or with a self-chosen handle.
