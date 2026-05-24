@@ -5,6 +5,7 @@ import TipCard from '../components/TipCard'
 import EventCard from '../components/EventCard'
 import LocationSearch from '../components/LocationSearch'
 import { getBriefing, getTips, addTip, getEvents } from '../services/api'
+import { useRecentSearches } from '../hooks/useRecentSearches'
 import styles from './NomadMode.module.css'
 
 const TIP_CATEGORIES = ['General', 'Food', 'Transport', 'Safety', 'Etiquette', 'Nightlife', 'Hidden Gems']
@@ -24,11 +25,13 @@ export default function NomadMode() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [formStatus, setFormStatus] = useState('idle')
   const [showForm, setShowForm] = useState(false)
+  const { record } = useRecentSearches()
 
   const search = useCallback(async ({ city, state, zip_code, displayName: name }) => {
     const cityLabel = name || zip_code || city
     setDisplayName(cityLabel)
     setLastSearch({ city, state, zip_code })
+    record({ city, state, zip_code, displayName: cityLabel })
     setPlaybookStatus('loading')
     setTipsStatus('loading')
     setEventsStatus('loading')
@@ -65,7 +68,7 @@ export default function NomadMode() {
     } else {
       setEventsStatus('error')
     }
-  }, [])
+  }, [record])
 
   const submitTip = async (e) => {
     e.preventDefault()

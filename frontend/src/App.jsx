@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import LocalMode from './pages/LocalMode'
 import NomadMode from './pages/NomadMode'
+import Saved from './pages/Saved'
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/local" element={<LocalMode />} />
       <Route path="/nomad" element={<NomadMode />} />
+      <Route path="/saved" element={<Saved />} />
     </Routes>
   )
 }

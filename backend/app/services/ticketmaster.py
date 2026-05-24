@@ -29,12 +29,13 @@ def _normalize(event: dict) -> dict:
 
 
 async def search_ticketmaster(
+    *,
     city: str | None,
     state: str | None,
     zip_code: str | None,
     category: str | None,
-    start_date: str | None,
-    end_date: str | None,
+    start_iso: str | None,
+    end_iso: str | None,
     size: int,
 ) -> list[dict]:
     api_key = os.getenv("TICKETMASTER_API_KEY")
@@ -43,20 +44,20 @@ async def search_ticketmaster(
 
     params = {"apikey": api_key, "size": size, "sort": "date,asc"}
 
-    if zip_code:
+    if zip_code and not city:
         params["postalCode"] = zip_code
-    else:
+    elif city:
         params["city"] = city
         if state:
-            # Ticketmaster uses 2-letter stateCode for US states
-            params["stateCode"] = state.strip().upper()[:2] if len(state.strip()) <= 2 else state.strip()[:2].upper()
+            s = state.strip()
+            params["stateCode"] = s.upper()[:2] if len(s) <= 2 else s[:2].upper()
 
     if category:
         params["classificationName"] = category
-    if start_date:
-        params["startDateTime"] = f"{start_date}T00:00:00Z"
-    if end_date:
-        params["endDateTime"] = f"{end_date}T23:59:59Z"
+    if start_iso:
+        params["startDateTime"] = start_iso
+    if end_iso:
+        params["endDateTime"] = end_iso
 
     async with httpx.AsyncClient(timeout=10) as client:
         resp = await client.get(BASE_URL, params=params)

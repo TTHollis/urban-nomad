@@ -26,22 +26,22 @@ def _normalize(event: dict) -> dict:
 
 
 async def search_eventbrite(
+    *,
     city: str | None,
     state: str | None,
     zip_code: str | None,
     category: str | None,
-    start_date: str | None,
-    end_date: str | None,
+    start_iso: str | None,
+    end_iso: str | None,
     size: int,
 ) -> list[dict]:
     token = os.getenv("EVENTBRITE_TOKEN")
     if not token:
         return []
 
-    # Build location string — Eventbrite accepts free-text address
-    if zip_code:
+    if zip_code and not city:
         location = zip_code
-    elif state:
+    elif state and city:
         location = f"{city}, {state}"
     else:
         location = city
@@ -52,10 +52,11 @@ async def search_eventbrite(
         "page_size": min(size, 50),
         "sort_by": "date",
     }
-    if start_date:
-        params["start_date.range_start"] = f"{start_date}T00:00:00"
-    if end_date:
-        params["start_date.range_end"] = f"{end_date}T23:59:59"
+    # Eventbrite expects un-zoned local datetime (no Z suffix)
+    if start_iso:
+        params["start_date.range_start"] = start_iso.replace("Z", "")
+    if end_iso:
+        params["start_date.range_end"] = end_iso.replace("Z", "")
 
     async with httpx.AsyncClient(
         timeout=10,

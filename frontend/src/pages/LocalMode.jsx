@@ -3,6 +3,7 @@ import Header from '../components/Header'
 import EventCard from '../components/EventCard'
 import LocationSearch from '../components/LocationSearch'
 import { getEvents } from '../services/api'
+import { useRecentSearches } from '../hooks/useRecentSearches'
 import styles from './LocalMode.module.css'
 
 const CATEGORIES = [
@@ -21,23 +22,29 @@ export default function LocalMode() {
   const [errorMsg, setErrorMsg] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [lastSearch, setLastSearch] = useState(null)
+  const { record } = useRecentSearches()
 
   const search = useCallback(async ({ city, state, zip_code, displayName: name, category: cat } = {}) => {
-    const searchParams = city !== undefined ? { city, state, zip_code } : lastSearch
+    // A "new" search is one where either city OR zip_code is provided.
+    // Otherwise we re-run the previous search (used when category changes).
+    const isNewSearch = city !== undefined || zip_code !== undefined
+    const searchParams = isNewSearch ? { city, state, zip_code } : lastSearch
     if (!searchParams) return
+    const label = name || displayName
     setStatus('loading')
     setErrorMsg('')
-    setDisplayName(name || displayName)
+    setDisplayName(label)
     setLastSearch(searchParams)
     try {
       const data = await getEvents({ ...searchParams, category: cat ?? category, size: 24 })
       setEvents(data.events || [])
       setStatus('success')
+      record({ ...searchParams, displayName: label })
     } catch (err) {
       setErrorMsg(err.message || 'Something went wrong')
       setStatus('error')
     }
-  }, [category, displayName, lastSearch])
+  }, [category, displayName, lastSearch, record])
 
   const handleSearch = (loc) => search({ ...loc })
 

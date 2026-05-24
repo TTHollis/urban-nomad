@@ -1,3 +1,4 @@
+import { useFavorites } from '../hooks/useFavorites'
 import styles from './EventCard.module.css'
 
 const SOURCE_LABEL = { ticketmaster: 'Ticketmaster', eventbrite: 'Eventbrite' }
@@ -11,6 +12,15 @@ function formatDate(date, time) {
 }
 
 export default function EventCard({ event }) {
+  const { isFavorite, toggle } = useFavorites()
+  const saved = isFavorite(event.id)
+
+  const handleStar = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggle(event)
+  }
+
   return (
     <a
       href={event.url}
@@ -29,6 +39,15 @@ export default function EventCard({ event }) {
         >
           {SOURCE_LABEL[event.source]}
         </span>
+        <button
+          type="button"
+          onClick={handleStar}
+          className={`${styles.starBtn} ${saved ? styles.starred : ''}`}
+          aria-label={saved ? 'Remove from saved' : 'Save event'}
+          title={saved ? 'Remove from saved' : 'Save event'}
+        >
+          {saved ? '★' : '☆'}
+        </button>
       </div>
       <div className={styles.body}>
         {event.category && <span className={styles.category}>{event.category}</span>}
