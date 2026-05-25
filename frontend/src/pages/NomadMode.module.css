@@ -352,6 +352,17 @@
 /* Tips */
 .tipsWrap { display: flex; flex-direction: column; gap: 16px; }
 
+.tipsIntroNomad {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding: 14px 18px;
+  background: var(--white-subtle);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius-sm);
+}
+.tipsIntroNomad strong { color: var(--white); }
+
 .tipsHeader {
   display: flex;
   align-items: flex-start;

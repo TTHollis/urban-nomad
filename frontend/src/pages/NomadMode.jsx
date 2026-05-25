@@ -6,13 +6,12 @@ import EventCard from '../components/EventCard'
 import LocationSearch from '../components/LocationSearch'
 import CalendarView from '../components/CalendarView'
 import Footer from '../components/Footer'
-import { getBriefing, getTips, addTip, getEvents } from '../services/api'
+import { getBriefing, getTips, getEvents } from '../services/api'
 import { useRecentSearches } from '../hooks/useRecentSearches'
 import { shareContent } from '../utils/share'
 import styles from './NomadMode.module.css'
 
 const TIP_CATEGORIES = ['General', 'Food', 'Transport', 'Safety', 'Etiquette', 'Nightlife', 'Hidden Gems']
-const INITIAL_FORM = { category: 'General', content: '', author_handle: '' }
 
 export default function NomadMode() {
   const [activeTab, setActiveTab] = useState('playbook')
@@ -25,9 +24,6 @@ export default function NomadMode() {
   const [playbookStatus, setPlaybookStatus] = useState('idle')
   const [tipsStatus, setTipsStatus] = useState('idle')
   const [eventsStatus, setEventsStatus] = useState('idle')
-  const [form, setForm] = useState(INITIAL_FORM)
-  const [formStatus, setFormStatus] = useState('idle')
-  const [showForm, setShowForm] = useState(false)
   const [eventsView, setEventsView] = useState('grid')
   const [shareToast, setShareToast] = useState('')
   const { record } = useRecentSearches()
@@ -107,32 +103,6 @@ export default function NomadMode() {
       setEventsStatus('error')
     }
   }, [record])
-
-  const [formError, setFormError] = useState('')
-
-  const submitTip = async (e) => {
-    e.preventDefault()
-    if (!form.content.trim()) return
-    setFormStatus('loading')
-    setFormError('')
-    try {
-      await addTip({ ...form, city: displayName, category: form.category.toLowerCase() })
-      const data = await getTips(displayName)
-      setTips(data.tips || [])
-      setForm(INITIAL_FORM)
-      setShowForm(false)
-      setFormStatus('idle')
-    } catch (err) {
-      // Detect moderation rejection vs generic error
-      const msg = err?.message || ''
-      if (msg.toLowerCase().includes("community standards")) {
-        setFormError(msg)
-      } else {
-        setFormError('Failed to post — try again.')
-      }
-      setFormStatus('error')
-    }
-  }
 
   const filteredTips = tipFilter
     ? tips.filter(t => t.category?.toLowerCase() === tipFilter.toLowerCase())
@@ -271,60 +241,25 @@ export default function NomadMode() {
               </div>
             )}
 
-            {/* Tips tab */}
+            {/* Tips tab — read-only on Nomad; locals add tips via Local mode */}
             {activeTab === 'tips' && (
               <div className={styles.tipsWrap}>
-                <div className={styles.tipsHeader}>
-                  <div className={styles.tipFilters}>
-                    <button className={`${styles.filterPill} ${tipFilter === '' ? styles.filterActive : ''}`} onClick={() => setTipFilter('')}>All</button>
-                    {TIP_CATEGORIES.map(c => (
-                      <button key={c} className={`${styles.filterPill} ${tipFilter === c ? styles.filterActive : ''}`} onClick={() => setTipFilter(tipFilter === c ? '' : c)}>{c}</button>
-                    ))}
-                  </div>
-                  <button className={styles.addBtn} onClick={() => setShowForm(v => !v)}>
-                    {showForm ? '✕ Cancel' : '+ Add Tip'}
-                  </button>
+                <p className={styles.tipsIntroNomad}>
+                  Tips from locals and nomads who've been to <strong>{displayName}</strong>.
+                  Want to contribute your own? Switch to <strong>Local</strong> mode when you're in your home city.
+                </p>
+                <div className={styles.tipFilters}>
+                  <button className={`${styles.filterPill} ${tipFilter === '' ? styles.filterActive : ''}`} onClick={() => setTipFilter('')}>All</button>
+                  {TIP_CATEGORIES.map(c => (
+                    <button key={c} className={`${styles.filterPill} ${tipFilter === c ? styles.filterActive : ''}`} onClick={() => setTipFilter(tipFilter === c ? '' : c)}>{c}</button>
+                  ))}
                 </div>
-
-                {showForm && (
-                  <form className={styles.tipForm} onSubmit={submitTip}>
-                    <select className={styles.select} value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-                      {TIP_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <textarea
-                      className={styles.textarea}
-                      placeholder={`Share an insider tip about ${displayName}…`}
-                      value={form.content}
-                      onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                      rows={3}
-                      maxLength={1000}
-                      required
-                    />
-                    <div className={styles.formRow}>
-                      <input className={styles.handleInput} placeholder="Your handle (optional)" value={form.author_handle} onChange={e => setForm(f => ({ ...f, author_handle: e.target.value }))} maxLength={60} />
-                      <button className={styles.submitBtn} type="submit" disabled={formStatus === 'loading' || !form.content.trim()}>
-                        {formStatus === 'loading' ? <span className={styles.spinner} /> : 'Post Tip'}
-                      </button>
-                    </div>
-                    <p className={styles.formFinePrint}>
-                      By posting, you agree to our{' '}
-                      <a
-                        href="https://github.com/TTHollis/urban-nomad/blob/master/ETHICS.md"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.formLink}
-                      >community standards</a>.
-                      Tips are screened by AI before going live.
-                    </p>
-                    {formStatus === 'error' && <p className={styles.formError}>{formError}</p>}
-                  </form>
-                )}
 
                 {tipsStatus === 'success' && filteredTips.length === 0 && (
                   <div className={styles.stateBox}>
                     <span className={styles.stateIcon}>🗺️</span>
                     <p className={styles.stateTitle}>No tips yet for {displayName}</p>
-                    <p className={styles.stateSub}>Be the first to share an insider tip!</p>
+                    <p className={styles.stateSub}>Once locals start sharing, their insider knowledge shows up here.</p>
                   </div>
                 )}
                 <div className={styles.tipsList}>
