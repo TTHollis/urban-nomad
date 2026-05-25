@@ -69,19 +69,52 @@ async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
 
 _ZIP_PATTERN = re.compile(r"^\d{5}$")
 
+# Full-name → 2-letter code lookup so "Florida" and "FL" canonicalize the same
+US_STATES = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
+    "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID",
+    "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS",
+    "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD",
+    "massachusetts": "MA", "michigan": "MI", "minnesota": "MN",
+    "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE",
+    "nevada": "NV", "new hampshire": "NH", "new jersey": "NJ",
+    "new mexico": "NM", "new york": "NY", "north carolina": "NC",
+    "north dakota": "ND", "ohio": "OH", "oklahoma": "OK", "oregon": "OR",
+    "pennsylvania": "PA", "rhode island": "RI", "south carolina": "SC",
+    "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT",
+    "vermont": "VT", "virginia": "VA", "washington": "WA",
+    "west virginia": "WV", "wisconsin": "WI", "wyoming": "WY",
+    "district of columbia": "DC", "washington dc": "DC", "washington d.c.": "DC",
+}
+
+
+def _normalize_state(state: str) -> str:
+    """Convert any US state input ('Florida', 'florida', 'FL', 'fl') to 'FL'."""
+    s = state.strip()
+    if not s:
+        return s
+    # Already a 2-letter abbreviation
+    if len(s) == 2:
+        return s.upper()
+    # Full name lookup
+    return US_STATES.get(s.lower(), s.title())
+
 
 async def canonicalize_location(label: str) -> str:
     """
-    Normalize a location label so tips stored under a zip code show up
-    for a city search, and vice versa.
+    Normalize a location label so the same place produces the same key
+    regardless of how the user typed it.
 
-    Rules:
-      - "32099"          -> "Jacksonville, FL"   (expand US zips)
-      - "Jacksonville, FL" -> unchanged
-      - "Tokyo"          -> unchanged
-      - "Jacksonville, FL (32099)" -> "Jacksonville, FL" (strip zip suffix)
+    Examples:
+      - "32099"                  -> "Jacksonville, FL"
+      - "Jacksonville, FL"       -> "Jacksonville, FL"
+      - "Jacksonville, Florida"  -> "Jacksonville, FL"
+      - "jacksonville, fl"       -> "Jacksonville, FL"
+      - "Jacksonville, FL (32099)" -> "Jacksonville, FL"
+      - "Tokyo"                  -> "Tokyo"
 
-    Returns the canonical label. Falls back to the input if lookup fails.
+    Falls back to title-cased input if normalization can't be performed.
     """
     cleaned = (label or "").strip()
     if not cleaned:
@@ -94,7 +127,18 @@ async def canonicalize_location(label: str) -> str:
     if _ZIP_PATTERN.match(cleaned):
         location = await zip_to_location(cleaned)
         if location and location.get("city"):
-            state = location.get("state")
-            return f"{location['city']}, {state}" if state else location["city"]
+            state = _normalize_state(location.get("state") or "")
+            city = location["city"].strip().title()
+            return f"{city}, {state}" if state else city
+        return cleaned
 
-    return cleaned
+    # "City, State" format → normalize both parts
+    if "," in cleaned:
+        parts = [p.strip() for p in cleaned.split(",", 1)]
+        if len(parts) == 2 and parts[0] and parts[1]:
+            city = parts[0].title()
+            state = _normalize_state(parts[1])
+            return f"{city}, {state}"
+
+    # Single-name international city → just title case it
+    return cleaned.title()
