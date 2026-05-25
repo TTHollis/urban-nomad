@@ -32,15 +32,19 @@ function dateKey(d) {
 
 const SOURCE_COLOR = { ticketmaster: '#026CDF', eventbrite: '#F05537' }
 
-export default function CalendarView({ events, accentColor = 'green' }) {
+export default function CalendarView({ events, accentColor = 'green', targetDate = null }) {
   const today = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
     return d
   }, [])
 
-  // Default view = the month of the first upcoming event (or today)
+  // Default view: targetDate (from a date filter) > first upcoming event > today
   const [viewDate, setViewDate] = useState(() => {
+    if (targetDate) {
+      const [y, m] = targetDate.split('-')
+      return new Date(parseInt(y), parseInt(m) - 1, 1)
+    }
     const first = events.find(e => e.start_date)
     if (first) {
       const [y, m] = first.start_date.split('-')
@@ -49,10 +53,22 @@ export default function CalendarView({ events, accentColor = 'green' }) {
     return new Date(today.getFullYear(), today.getMonth(), 1)
   })
 
-  // When the events list changes (e.g. a new date filter), jump to the month
-  // of the first event in the new result set. Keeps the calendar in sync with
-  // whatever the user just filtered to.
+  // Jump immediately when the user changes their date filter — no waiting for
+  // events to load. This is the strongest signal of where the user wants to look.
   useEffect(() => {
+    if (!targetDate) return
+    const [y, m] = targetDate.split('-')
+    const target = new Date(parseInt(y), parseInt(m) - 1, 1)
+    setViewDate(prev =>
+      prev.getFullYear() === target.getFullYear() && prev.getMonth() === target.getMonth()
+        ? prev
+        : target
+    )
+  }, [targetDate])
+
+  // Fallback: if no filter is active but events changed, jump to first event's month
+  useEffect(() => {
+    if (targetDate) return // already handled above
     const first = events.find(e => e.start_date)
     if (!first) return
     const [y, m] = first.start_date.split('-')
@@ -62,7 +78,7 @@ export default function CalendarView({ events, accentColor = 'green' }) {
         ? prev
         : target
     )
-  }, [events])
+  }, [events, targetDate])
 
   const eventsByDate = useMemo(() => {
     const map = new Map()

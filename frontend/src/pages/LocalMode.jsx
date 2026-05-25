@@ -227,7 +227,7 @@ export default function LocalMode() {
                     {events.map(event => <EventCard key={event.id} event={event} />)}
                   </div>
                 ) : (
-                  <CalendarView events={events} accentColor="green" />
+                  <CalendarView events={events} accentColor="green" targetDate={dateRange.start_date} />
                 )}
               </section>
             )}

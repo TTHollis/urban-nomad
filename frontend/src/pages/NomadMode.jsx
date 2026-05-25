@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import TipCard from '../components/TipCard'
 import EventCard from '../components/EventCard'
 import LocationSearch from '../components/LocationSearch'
+import DateFilter from '../components/DateFilter'
 import CalendarView from '../components/CalendarView'
 import Footer from '../components/Footer'
 import { getBriefing, getTips, getEvents } from '../services/api'
@@ -25,6 +26,7 @@ export default function NomadMode() {
   const [tipsStatus, setTipsStatus] = useState('idle')
   const [eventsStatus, setEventsStatus] = useState('idle')
   const [eventsView, setEventsView] = useState('grid')
+  const [dateRange, setDateRange] = useState({ preset: 'any', start_date: undefined, end_date: undefined })
   const [shareToast, setShareToast] = useState('')
   const { record } = useRecentSearches()
 
@@ -79,7 +81,14 @@ export default function NomadMode() {
     const [playbookResult, tipsResult, eventsResult] = await Promise.allSettled([
       getBriefing(locationLabel),
       getTips(locationLabel),
-      getEvents({ city, state, zip_code, size: 24 }),
+      getEvents({
+        city,
+        state,
+        zip_code,
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        size: 24,
+      }),
     ])
 
     if (playbookResult.status === 'fulfilled') {
@@ -102,7 +111,28 @@ export default function NomadMode() {
     } else {
       setEventsStatus('error')
     }
-  }, [record])
+  }, [record, dateRange])
+
+  // Re-fetch only events when the date filter changes (playbook + tips are
+  // date-agnostic so no need to reload them)
+  const handleDateChange = async (range) => {
+    setDateRange(range)
+    if (!lastSearch) return
+    setEventsStatus('loading')
+    setEvents([])
+    try {
+      const data = await getEvents({
+        ...lastSearch,
+        start_date: range.start_date,
+        end_date: range.end_date,
+        size: 24,
+      })
+      setEvents(data.events || [])
+      setEventsStatus('success')
+    } catch {
+      setEventsStatus('error')
+    }
+  }
 
   const filteredTips = tipFilter
     ? tips.filter(t => t.category?.toLowerCase() === tipFilter.toLowerCase())
@@ -128,6 +158,9 @@ export default function NomadMode() {
             accentColor="amber"
             buttonLabel="Explore"
           />
+          {hasResults && activeTab === 'events' && (
+            <DateFilter value={dateRange} onChange={handleDateChange} accentColor="amber" />
+          )}
         </section>
 
         {hasResults && (
@@ -234,7 +267,7 @@ export default function NomadMode() {
                         {events.map(event => <EventCard key={event.id} event={event} />)}
                       </div>
                     ) : (
-                      <CalendarView events={events} accentColor="amber" />
+                      <CalendarView events={events} accentColor="amber" targetDate={dateRange.start_date} />
                     )}
                   </>
                 )}
