@@ -8,6 +8,10 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     plan: free
     envVars:
+      # Pin Python — Render defaults to 3.14 which doesn't yet have
+      # prebuilt pydantic-core wheels, forcing a slow + flaky Rust build.
+      - key: PYTHON_VERSION
+        value: 3.12.7
       - key: TICKETMASTER_API_KEY
         sync: false
       - key: EVENTBRITE_TOKEN
