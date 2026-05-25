@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import styles from './FeedbackForm.module.css'
 
-// Shared with QRoots — submissions land in the same inbox.
-// The `source: "Urban Nomad"` field below lets you distinguish them.
-const FORMSPREE_URL = 'https://formspree.io/f/xpqbvyza'
+// Urban Nomad's dedicated Formspree endpoint — submissions go directly to inbox.
+const FORMSPREE_URL = 'https://formspree.io/f/xpqnjjdp'
 
 export default function FeedbackForm() {
   const [status, setStatus] = useState('idle')
