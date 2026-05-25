@@ -6,15 +6,36 @@ NOMINATIM_SEARCH = "https://nominatim.openstreetmap.org/search"
 USER_AGENT = "UrbanNomad/0.1 (https://github.com/TTHollis/urban-nomad)"
 
 
-async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
-    """
-    Look up a postal code and return {city, state, country}.
-    Falls back to None if not found.
+ZIPPOPOTAM_URL = "https://api.zippopotam.us"
 
-    Why: Ticketmaster's postalCode filter is too narrow — most events in a
-    given zip won't actually be ticketed at that exact postal code. We expand
-    to the city level for a much more useful search.
+
+async def _try_zippopotam(zip_code: str) -> dict | None:
     """
+    Purpose-built free zip lookup service. Much more reliable than Nominatim
+    for US zips and not subject to the same aggressive rate limits.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            resp = await client.get(f"{ZIPPOPOTAM_URL}/us/{zip_code}")
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+    except Exception:
+        return None
+
+    places = data.get("places", [])
+    if not places:
+        return None
+    place = places[0]
+    city = (place.get("place name") or "").strip()
+    state_abbr = (place.get("state abbreviation") or "").strip().upper()
+    if not city:
+        return None
+    return {"city": city, "state": state_abbr, "country": "US"}
+
+
+async def _try_nominatim(zip_code: str, country: str = "us") -> dict | None:
+    """Nominatim fallback for international zips or when zippopotam fails."""
     params = {
         "postalcode": zip_code,
         "country": country,
@@ -31,7 +52,6 @@ async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
                 return None
             data = resp.json()
             if not data:
-                # Try again without country lock — some postal codes are non-US
                 params.pop("country", None)
                 resp = await client.get(NOMINATIM_SEARCH, params=params)
                 if resp.status_code != 200:
@@ -51,7 +71,6 @@ async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
         or addr.get("municipality")
         or addr.get("county")
     )
-    # Pull 2-letter state code from ISO3166-2-lvl4 like "US-FL"
     iso = addr.get("ISO3166-2-lvl4", "")
     state_code = ""
     if iso and "-" in iso:
@@ -61,10 +80,24 @@ async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
     if not state_code:
         state_code = addr.get("state", "") or ""
     country_code = (addr.get("country_code") or "").upper()
-
     if not city:
         return None
     return {"city": city, "state": state_code, "country": country_code}
+
+
+async def zip_to_location(zip_code: str, country: str = "us") -> dict | None:
+    """
+    Look up a postal code → {city, state, country}.
+    Tries zippopotam.us first (purpose-built, reliable for US), falls back
+    to Nominatim for international zips or if zippopotam fails.
+    """
+    # Try zippopotam first — designed for this exact lookup, far more reliable
+    if country.lower() == "us":
+        result = await _try_zippopotam(zip_code)
+        if result:
+            return result
+    # Fallback to Nominatim
+    return await _try_nominatim(zip_code, country)
 
 
 _ZIP_PATTERN = re.compile(r"^\d{5}$")
